@@ -1,6 +1,0 @@
-print ( "=== Help Menu ===" )
-print ( "This is the main help menu." )
-print ( "[Usage]: scu help <command>" )
-print ( "Below is the completely list of possible commands: " )
-print ( "   * start -> Starts a service" )
-print ( "\n\nExample: \"scu help start\"" )

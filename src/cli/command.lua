@@ -18,7 +18,6 @@ local commands = {
         name = "help",
         run = "/scu/cli/help/",
         options = {
-            { nil, "nil" },
             { "start", "start" }
         }
     }
@@ -37,8 +36,8 @@ end
 
 -- Gets the option array based on its first value
 local function getOption ( cmd, option )
-    for _, o in ipairs ( cmd ) do
-        if o[0] == option then
+    for _, o in ipairs ( cmd["options"] ) do
+        if o[1] == option then
             return o
         end
     end
@@ -52,10 +51,12 @@ command.valid = function ( cmd, option )
     
     -- Checks if the command is valid
     local _cmd = getCommand ( cmd )
-    if ( _cmd == nil ) then return false end
+    if ( _cmd == nil ) then 
+        return false 
+    end
 
     for _, o in ipairs ( _cmd["options"] ) do
-        if o[0] == option then
+        if o[1] == option then
             return true
         end
     end
