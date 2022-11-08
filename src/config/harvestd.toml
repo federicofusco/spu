@@ -1,0 +1,5 @@
+[harvestd]
+crop = "minecraft:potato"
+row-length = 9
+double-sided = false
+advanced = true
