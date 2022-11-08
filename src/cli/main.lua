@@ -15,5 +15,5 @@ if ( command.valid ( arg[1], arg[2] ) ) then
     -- Runs the command
     command.run ( arg[1], arg[2] )
 else 
-    stdout.error ( "Invalid arguments (" .. arg[1] .. ", " .. arg[2] .. ") supplied!\nSee \"scu help\" menu for more information." )
+    stdout.error ( "Invalid arguments supplied!\nSee \"scu help\" menu for more information." )
 end

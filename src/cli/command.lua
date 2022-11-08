@@ -11,22 +11,35 @@ local commands = {
         name = "start",
         run = "/scu/services/",
         options = {
-            "harvest"
+            { "harvest", "harvestd" }
         }
     },
     {
         name = "help",
         run = "/scu/cli/help/",
         options = {
-            "start"
+            { nil, "nil" },
+            { "start", "start" }
         }
     }
 }
 
+-- Gets the command object by its name
 local function getCommand ( cmd )
     for _, c in ipairs ( commands ) do
         if c["name"] == cmd then
             return c
+        end
+    end
+
+    return nil
+end
+
+-- Gets the option array based on its first value
+local function getOption ( cmd, option )
+    for _, o in ipairs ( cmd ) do
+        if o[0] == option then
+            return o
         end
     end
 
@@ -42,7 +55,7 @@ command.valid = function ( cmd, option )
     if ( _cmd == nil ) then return false end
 
     for _, o in ipairs ( _cmd["options"] ) do
-        if o == option then
+        if o[0] == option then
             return true
         end
     end
@@ -53,13 +66,22 @@ end
 -- Executes a given command, 
 -- WARNING: This function assumes that command.valid has already validated the command and option
 command.run = function ( cmd, option )
+   
+    -- Gets the command
     local _cmd = getCommand ( cmd )
     if ( _cmd == nil ) then 
-        stdout.error ( "Something went wrong! (code: command.run/invalid-command)!", "PANIC" )
+        stdout.error ( "Something went wrong!\n(code: command.run/invalid-command)!", "PANIC" )
         return nil
     end
 
-    shell.run ( _cmd["run"] .. option )
+    -- Gets the option 
+    local _option = getOption ( _cmd, option )
+    if ( _option == nil ) then 
+        stdout.error ( "Something went wrong!\n(code: command.run/invalid-option)!", "PANIC" )
+        return nil 
+    end
+
+    shell.run ( _cmd["run"] .. _option[1] )
 end
 
 return command
