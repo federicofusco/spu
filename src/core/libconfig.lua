@@ -2,7 +2,7 @@
 local scuDirectory = "/scu"
 
 -- Gets the TOML parser from libtoml
-local libtoml = require ( "scu.core.libtoml" )
+local libtoml = require ( "libtoml" )
 
 -- Inits the config object
 local libconfig = {}
