@@ -1,6 +1,3 @@
--- SCU home directory
-local scuDirectory = "/scu"
-
 -- Gets the TOML parser from libtoml
 local libtoml = require ( "libtoml" )
 
@@ -13,7 +10,7 @@ local libconfig = {}
 libconfig.parseConfigFile = function ( util )
 
     -- Opens the config file
-    local configFile = fs.open ( scuDirectory .. "/config/" .. util .. ".toml", "r" )
+    local configFile = fs.open ( "/scu/config/" .. util .. ".toml", "r" )
     local config = configFile.readAll ()
     configFile.close ()
 

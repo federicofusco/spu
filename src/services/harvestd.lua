@@ -1,170 +1,140 @@
--- SCU home directory
-local scuDirectory = "/scu" 
-
 -- Parses the relative config file
-local libconfig = require ( "scu.core.libconfig" )
-local config = libconfig.parseConfigFile ( "harvest" )
+package.path = "/scu/core/?.lua;" .. package.path
+local libconfig = require ( "libconfig" )
+local config = libconfig.parseConfigFile ( "harvestd" )["harvestd"]
 
-local pretty = require ( "cc.pretty" )
-pretty.pretty_print ( config )
+-- local variables
+local currentLimit = 1 -- 1 Represents right, 0 left
+local facingPlant = true
 
- 
--- -- local variables
--- local plantMinAge = 7
--- local maxSuckIterations = 5
--- local plantType = "minecraft:potato"
--- local currentLimit = 1 -- 1 Represents right, 0 left
--- local facingPlant = true
--- local debugLogPath = scuDirectory .. "/utils/harvest.debug.log"
--- local logPath = scuDirectory .. "/utils/harvest.log"
+function log ( str, debug )
+    debug = debug or false
+    local log = fs.open ( if ( debug ) then config["debug-log-path"] else config["log-path"] end )
+    log.writeLine ( str )
+    log.close ()
+end
 
--- function log ( str )
---     local debugLog = fs.open ( logFile, "a" )
---     debugLog.writeLine ( str )
---     debugLog.close ()
--- end
+-- Gets the item index 
+-- RETURNS: Slot index if the item is in the inventory, or nil
+function getItemIndex ( index )
+    for x = 1, 16, 1 do
 
--- -- Gets the item index 
--- -- RETURNS: Slot index if the item is in the inventory, or nil
--- function getItemIndex ( index )
---     for x = 1, 16, 1 do
+        -- Checks if the item matches the index
+        local item = turtle.getItemDetail ( x )
+        if ( item ~= nil and item["name"] == index ) then
+            return x
+        end
+    end
 
---         -- Checks if the item matches the index
---         local item = turtle.getItemDetail ( x )
---         if ( item ~= nil and item["name"] == index ) then
---             log ( "[getItemIndex]: Found " .. index .. " at index " .. x )
---             return x
---         end
---     end
+    -- The item is not in the inventory
+    return nil
+end
 
---     -- The item is not in the inventory
---     log ( "[getItemIndex]: No index " .. index .. " found!" )
---     return nil
--- end
+-- Checks if the current plant has grown
+-- RETURNS: A boolean representing whether or not the current plant is eligible to be harvested, nil if the block is not a plant
+function isPlantGrown ()
+    if ( facingPlant ~= true ) then return nil end
+    local _, blockData = turtle.inspect ()
+    return blockData["state"]["age"] >= config["min-crop-age"]
+end
 
--- -- Checks if the current plant has grown
--- -- RETURNS: A boolean representing whether or not the current plant is eligible to be harvested, nil if the block is not a plant
--- function isPlantGrown ()
---     if ( facingPlant ~= true ) then return nil end
---     local _, blockData = turtle.inspect ()
---     log ( "[isPlantGrown]: Current plant state: " .. blockData["state"]["age"] )
---     return blockData["state"]["age"] >= plantMinAge
--- end
+-- Succ
+function suckItems ()
+    for x = 1, config["max-suck-iterations"], 1 do
+        turtle.suck ()
+    end
+end
 
--- -- Succ
--- function suckItems ()
---     log ( "[suckItems]: Succing" )
---     for x = 1, maxSuckIterations, 1 do
---         turtle.suck ()
---     end
--- end
+-- Replants the current plantPLANT_MIN_AGE
+-- RETURNS: A boolean representing whether or not the plant was replanted
+function replant ()
 
--- -- Replants the current plantPLANT_MIN_AGE
--- -- RETURNS: A boolean representing whether or not the plant was replanted
--- function replant ()
+    -- Checks if the block exists
+    if ( turtle.detect () ) then
 
---     log ( "[replant]: Replanting!" )
+        -- Replaces the block
+        turtle.dig ()
+        suckItems ()
+        local plantIndex = getItemIndex ( config["crop"] )
+        if ( plantIndex ~= nil ) then
+            turtle.select ( plantIndex )
+            turtle.place ()
+            return true
+        else
 
---     -- Checks if the block exists
---     if ( turtle.detect () ) then
+            -- No plant available
+            return false
+        end
+    else
 
---         -- Replaces the block
---         log ( "[replant]: Found plant!" )
---         turtle.dig ()
---         suckItems ()
---         local plantIndex = getItemIndex ( plantType )
---         if ( plantIndex ~= nil ) then
---             turtle.select ( plantIndex )
---             turtle.place ()
---             log ( "[replant]: Replanted!" )
---             return true
---         else
+        -- No block in front
+        return false
+    end
+end
 
---             -- No plant available
---             log ( "[replant]: No plant available!" )
---             return false
---         end
---     else
+-- Checks if the turtle has reached the limit
+-- RETURNS: Boolean representing whether or not it has reached the limit
+function updateLimit ()
 
---         -- No block in front
---         log ( "[replant]: No plant found!" )
---         return false
---     end
--- end
+    -- Checks if there is an obstruction to the current path
+    if ( currentLimit == 1 ) then
+        turtle.turnLeft ()
+        facingPlant = false
+    else
+        turtle.turnRight ()
+        facingPlant = false
+    end
 
--- -- Checks if the turtle has reached the limit
--- -- RETURNS: Boolean representing whether or not it has reached the limit
--- function updateLimit ()
+    local reached = turtle.detect ()
+    if ( reached ) then
+        currentLimit = math.abs ( currentLimit - 1 )
+        return reached
+    end
 
---     -- Checks if there is an obstruction to the current path
---     if ( currentLimit == 1 ) then
---         log ( "[updateLimit]: Turning left!" )
---         turtle.turnLeft ()
---         facingPlant = false
---     else
---         log ( "[updateLimit]: Turning right!" )
---         turtle.turnRight ()
---         facingPlant = false
---     end
+    return false
+end
 
---     local reached = turtle.detect ()
---     if ( reached ) then
---         currentLimit = math.abs ( currentLimit - 1 )
---         log ( "[updateLimit]: Current limit: " .. currentLimit )
---         return reached
---     end
+-- Moves the turtle laterally alogn the row
+function moveLaterally ()
 
---     return false
--- end
+    -- Checks if the turtle has reached the limit
+    local reached = updateLimit ()
+    if ( reached ) then
 
--- -- Moves the turtle laterally alogn the row
--- function moveLaterally ()
+        if ( currentLimit == 0 ) then
+            turtle.turnRight ()
+            facingPlant = true
+        else 
+            turtle.turnLeft ()
+            facingPlant = true
+        end
 
---     -- Checks if the turtle has reached the limit
---     local reached = updateLimit ()
---     log ( "[moveLaterally]: Currently at limit: " .. currentLimit )
---     log ( "[moveLaterally]: Reached limit now: " .. tostring ( reached ) )
---     if ( reached ) then
+        return false
+    end
 
---         if ( currentLimit == 0 ) then 
---             turtle.turnRight ()    
---             facingPlant = true
---         else 
---             turtle.turnLeft ()
---             facingPlant = true
---         end
+    -- Currently at the right limit (needs to move left)
+    if ( currentLimit == 1 ) then
+        turtle.forward ()
+        turtle.turnRight ()
 
---         return false
---     end
+    -- Currently at the left limit (needs to move right)
+    else
+        turtle.forward ()
+        turtle.turnLeft ()
+    end
 
---     -- Currently at the right limit (needs to move left)
---     if ( currentLimit == 1 ) then
---         log ( "[moveLaterally]: Moved left!" )
---         turtle.forward ()
---         turtle.turnRight ()
+    return true
+end
 
---     -- Currently at the left limit (needs to move right)
---     else
---         log ( "[moveLaterally]: Moved right!" )
---         turtle.forward ()
---         turtle.turnLeft ()
---     end
+-- MAIN FUNCTION
+while true do
 
---     return true
--- end
+    -- Checks if the current plant has grown
+    if ( isPlantGrown () ) then
 
-
--- -- MAIN FUNCTION
--- while true do
-
---     -- Checks if the current plant has grown
---     if ( isPlantGrown () ) then
-
---         log ( "[main]: Plant has grown! Staring loop!" )
-
---         replant ()
---         while moveLaterally () do
---             replant ()
---         end
---     end
--- end
+        replant ()
+        while moveLaterally () do
+            replant ()
+        end
+    end
+end

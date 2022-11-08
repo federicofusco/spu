@@ -1,6 +1,14 @@
 {
     "Lua.diagnostics.globals": [
         "fs",
-        "shell"
+        "shell",
+        "turtle",
+        "getItemIndex",
+        "isPlantGrown",
+        "suckItems",
+        "replant",
+        "updateLimit",
+        "moveLaterally",
+        "log"
     ]
 }

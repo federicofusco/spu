@@ -2,3 +2,7 @@
 crop = "minecraft:potato"
 row-length = 9
 double-sided = false
+min-crop-age = 7
+max-suck-iterations = 5
+debug-log-path = "/scu/services/logs/harvestd.debug.log"
+log-path = "/scu/services/logs/harvestd.log"

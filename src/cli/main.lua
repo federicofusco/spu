@@ -1,3 +1,7 @@
+-- [[
+--     This is responsible for handling the initial CLI input
+-- ]]
+
 local stdout = require ( "stdout" )
 local command = require ( "command" )
 
