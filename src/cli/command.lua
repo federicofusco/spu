@@ -9,14 +9,14 @@ local command = {}
 local commands = { 
     {
         name = "start",
-        run = "/scu/services/",
+        run = "/.scu/services/",
         options = {
             { "harvest", "harvestd" }
         }
     },
     {
         name = "help",
-        run = "/scu/cli/help/",
+        run = "/.scu/cli/help/",
         options = {
             { "start", "start" }
         }

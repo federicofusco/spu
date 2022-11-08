@@ -10,7 +10,7 @@ local libconfig = {}
 libconfig.parseConfigFile = function ( util )
 
     -- Opens the config file
-    local configFile = fs.open ( "/scu/config/" .. util .. ".toml", "r" )
+    local configFile = fs.open ( "/.scu/config/" .. util .. ".toml", "r" )
     local config = configFile.readAll ()
     configFile.close ()
 

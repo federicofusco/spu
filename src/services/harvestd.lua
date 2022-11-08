@@ -1,5 +1,5 @@
 -- Parses the relative config file
-package.path = "/scu/core/?.lua;" .. package.path
+package.path = "/.scu/core/?.lua;" .. package.path
 local libconfig = require ( "libconfig" )
 local config = libconfig.parseConfigFile ( "harvestd" )["harvestd"]
 
@@ -9,7 +9,10 @@ local facingPlant = true
 
 function log ( str, debug )
     debug = debug or false
-    local log = fs.open ( if ( debug ) then config["debug-log-path"] else config["log-path"] end )
+    local logFile = ""
+    if ( debug ) then logFile = config["debug-log-file"] else logFile = config["log-file"] end
+
+    local log = fs.open ( logFile, "a" )
     log.writeLine ( str )
     log.close ()
 end

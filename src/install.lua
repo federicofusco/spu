@@ -8,7 +8,7 @@ local configURL = baseURL .. "/config"
 local cliURL = baseURL .. "/cli"
 
 -- Creates the SCU directory
-local directory = "/scu"
+local directory = "/.scu"
 fs.makeDir ( directory )
 
 -- [[ Downloads libs ]]
@@ -31,4 +31,4 @@ shell.run ( "wget", cliURL .. "/command.lua", directory .. "/cli/command.lua" )
 shell.run ( "wget", cliURL .. "/help/start.lua", directory .. "/cli/help/start.lua" )
 
 -- [[ Sets up aliases ]]
-shell.setAlias ( "scu", "/scu/cli/main" )
+shell.setAlias ( "scu", "/.scu/cli/main" )
