@@ -29,7 +29,6 @@ shell.run ( "wget", cliURL .. "/main.lua", directory .. "/cli/main.lua" )
 shell.run ( "wget", cliURL .. "/stdout.lua", directory .. "/cli/stdout.lua" )
 shell.run ( "wget", cliURL .. "/command.lua", directory .. "/cli/command.lua" )
 shell.run ( "wget", cliURL .. "/help/start.lua", directory .. "/cli/help/start.lua" )
-shell.run ( "wget", cliURL .. "/help/nil.lua", directory .. "/cli/help/nil.lua" )
 
 -- [[ Sets up aliases ]]
 shell.setAlias ( "scu", "/scu/cli/main" )
