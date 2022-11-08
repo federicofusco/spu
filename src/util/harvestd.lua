@@ -1,8 +1,12 @@
 -- SCU home directory
 local scuDirectory = "/.scu"
 
--- Gets the TOML parser from libtoml
-local toml = require ( scuDirectory .. "/core/libtoml" )
+-- Parses the relative config file
+local libconfig = require ( scuDirectory .. "/core/libconfig" )
+local config = libconfig.parseConfigFile ( "harvest" )
+
+local pretty = require ( "cc.pretty" )
+pretty.pretty_print ( config )
 
  
 -- -- local variables
