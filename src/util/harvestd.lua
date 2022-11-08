@@ -1,8 +1,8 @@
 -- SCU home directory
-local scuDirectory = "/.scu"
+local scuDirectory = "/scu" 
 
 -- Parses the relative config file
-local libconfig = require ( scuDirectory .. "/core/libconfig" )
+local libconfig = require ( "scu.core.libconfig" )
 local config = libconfig.parseConfigFile ( "harvest" )
 
 local pretty = require ( "cc.pretty" )

@@ -6,7 +6,7 @@ local serviceURL = "https://raw.githubusercontent.com/federicofusco/spu/main/src
 local configURL = "https://raw.githubusercontent.com/federicofusco/spu/main/src/config"
 
 -- Creates the SCU directory
-local directory = "/.scu"
+local directory = "/scu"
 fs.makeDir ( directory )
 
 -- [[ Downloads libs ]]
