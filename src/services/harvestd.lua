@@ -7,7 +7,8 @@ local harvestdConfig = config["harvestd"]
 local logConfig = config["log"]
 local stateConfig = config["state"]
 
-local crop = harvestdConfig["crop"] or libstdout.error ( "Crop property mu be set!", "Config" )
+local crop = harvestdConfig["crop"] or libstdout.error ( "Crop property must be set!", "Config" )
+local seed = harvestdConfig["seed"] or libstdout.error ( "Seed property must be set!", "Config" )
 local doubleSided = harvestdConfig["double-sided"] or false
 local rowLength = harvestdConfig["row-length"] or nil
 local minCropAge = harvestdConfig["min-crop-age"] or 7
@@ -20,16 +21,6 @@ local limit = { stateConfig["limit"] or 1 } -- Must be used as limit[1], so it c
 local facing = { stateConfig["facing"] or 1 } -- Same here
 
 local libturtle = require ( "libturtle" )
-
--- Checks if the front facing plant has grown
-function isPlantGrown ()
-    local isBlock, blockData = turtle.inspect ()
-    if ( isBlock ) then
-        return blockData["state"]["age"] >= minCropAge
-    end
-
-    return nil
-end
 
 function moveAlong ()
     if ( rowLength == nil ) then
@@ -60,13 +51,13 @@ libturtle.setRotation ( 1, limit, facing )
 while true do
 
     -- Checks if the plant has grown
-    if ( isPlantGrown () == true ) then
+    if ( libturtle.isPlantGrown ( minCropAge, crop ) == true ) then
         if ( rowLength ~= nil ) then
 
             for _ = 1, rowLength - 1, 1 do
 
                 -- Replants the crop
-                libturtle.replant ( doubleSided, crop, limit, facing, maxSuckIterations, logPath )
+                libturtle.replant ( doubleSided, seed, limit, facing, maxSuckIterations, logPath )
 
                 -- Moves along the row
                 moveAlong ()
@@ -80,9 +71,9 @@ while true do
         else
 
             -- Moves until it runs into an obstacle
-            libturtle.replant ( doubleSided, crop, limit, facing, maxSuckIterations, logPath )
+            libturtle.replant ( doubleSided, seed, limit, facing, maxSuckIterations, logPath )
             while moveAlong () do
-                libturtle.replant ( doubleSided, crop, limit, facing, maxSuckIterations, logPath )
+                libturtle.replant ( doubleSided, seed, limit, facing, maxSuckIterations, logPath )
             end
         end
     end

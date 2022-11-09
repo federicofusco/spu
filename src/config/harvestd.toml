@@ -1,7 +1,8 @@
 # Just the a default config file
 
 [harvestd]
-crop                = "minecraft:potato" # REQUIRED
+crop                = "minecraft:wheat" # REQUIRED
+seed                = "minecraft:wheat_seeds"
 row-length          = 9
 double-sided        = true
 min-crop-age        = 7

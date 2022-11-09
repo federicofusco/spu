@@ -75,7 +75,7 @@ libturtle.setRotation = function ( rot, limit, facing )
 end
 
 -- Replants the front facing crop
-libturtle.replantSingle = function ( crop, maxSuckIterations, log )
+libturtle.replantSingle = function ( seed, maxSuckIterations, log )
 
     -- Checks if the block exists
     if ( turtle.detect () ) then
@@ -83,7 +83,7 @@ libturtle.replantSingle = function ( crop, maxSuckIterations, log )
         -- Replaces the block
         turtle.dig ()
         libturtle.suckItems ( maxSuckIterations )
-        local plantIndex = libturtle.getItemIndex ( crop )
+        local plantIndex = libturtle.getItemIndex ( seed )
         if ( plantIndex ~= nil ) then
             turtle.select ( plantIndex )
             turtle.place ()
@@ -103,22 +103,32 @@ libturtle.replantSingle = function ( crop, maxSuckIterations, log )
 end
 
 -- Replants crop on both sides 
-libturtle.replantDouble = function ( crop, limit, facing, maxSuckIterations, log )
+libturtle.replantDouble = function ( seed, limit, facing, maxSuckIterations, log )
     libturtle.setRotation ( 1, limit, facing )
-    libturtle.replantSingle ( crop, maxSuckIterations, log )
+    libturtle.replantSingle ( seed, maxSuckIterations, log )
     libturtle.turnAround ( facing, limit )
-    libturtle.replantSingle ( crop, maxSuckIterations, log )
+    libturtle.replantSingle ( seed, maxSuckIterations, log )
 end
 
 -- Handler for replantSingle() and replantDouble()
-libturtle.replant = function ( doubleSided, crop, limit, facing, maxSuckIterations, log )
+libturtle.replant = function ( doubleSided, seed, limit, facing, maxSuckIterations, log )
     if ( doubleSided ) then 
-        libturtle.replantDouble ( crop, limit, facing, maxSuckIterations, log ) 
+        libturtle.replantDouble ( seed, limit, facing, maxSuckIterations, log ) 
     else 
         libturtle.setRotation ( 1, limit, facing )
-        libturtle.replantSingle ( crop, maxSuckIterations, log ) 
+        libturtle.replantSingle ( seed, maxSuckIterations, log ) 
     end
     libturtle.setRotation ( 0, limit, facing )
+end
+
+-- Checks if the front facing plant has grown
+libturtle.isPlantGrown = function ( minCropAge, crop )
+    local isBlock, blockData = turtle.inspect ()
+    if ( isBlock and blockData["name"] == crop ) then
+        return blockData["state"]["age"] >= minCropAge
+    end
+
+    return nil
 end
 
 return libturtle
