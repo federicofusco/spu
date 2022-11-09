@@ -14,12 +14,14 @@ fs.makeDir ( directory )
 -- [[ Downloads libs ]]
 shell.run ( "wget", libURL .. "/libtoml.lua", directory .. "/core/libtoml.lua" )
 shell.run ( "wget", libURL .. "/libconfig.lua", directory .. "/core/libconfig.lua" )
+shell.run ( "wget", libURL .. "/libstdout.lua", directory .. "/core/libstdout.lua" )
+shell.run ( "wget", libURL .. "/libturtle.lua", directory .. "/core/libturtle.lua" )
 
 shell.run ( "wget", serviceURL .. "/harvestd.lua", directory .. "/services/harvestd.lua" )
 
 -- [[ Sets up logs ]]
 fs.open ( directory .. "/services/logs/harvestd.debug.log", "w" ).close ()
-fs.open ( directory .. "/services/logs/harvestd.log", "w" ).close ()
+fs.open ( directory .. "/services/logs/harvestd.log", "w" ).close () 
 
 -- [[ Creates default config files ]]
 shell.run ( "wget", configURL .. "/harvestd.toml", directory .. "/config/harvestd.toml" )

@@ -1,167 +1,214 @@
 -- Parses the relative config file
 package.path = "/.scu/core/?.lua;" .. package.path
 local libconfig = require ( "libconfig" )
-local config = libconfig.parseConfigFile ( "harvestd" )["harvestd"]
+local libstdout = require ( "libstdout" )
+local config = libconfig.parseConfigFile ( "harvestd" )
+local harvestdConfig = config["harvestd"]
+local logConfig = config["log"]
+local stateConfig = config["state"]
 
--- local variables
-local currentLimit = 1 -- 1 Represents right, 0 left
+local crop = harvestdConfig["crop"] or libstdout.error ( "Crop property mu be set!", "Config" )
+local doubleSided = harvestdConfig["double-sided"] or false
+local rowLength = harvestdConfig["row-length"] or nil
+local minCropAge = harvestdConfig["min-crop-age"] or 7
+local maxSuckIterations = harvestdConfig["max-suck-iterations"] or 5
 
-function log ( str, debug )
-    debug = debug or true
-    if ( debug ) then  
-        local log = fs.open ( config["debug-log-path"], "a" )
-        log.writeLine ( str )
-        log.close ()
+local debugLogPath = logConfig["debug-log-path"] or "/.scu/services/logs/harvestd.debug.log"
+local logPath = logConfig["log-path"] or "/.scu/services/logs/harvestd.log"
+
+local limit = stateConfig["limit"] or 1
+local facing = stateConfig["facing"] or 1
+
+local libturtle = require ( "libturtle" )
+
+-- Checks if the front facing plant has grown
+function isPlantGrown ()
+    local isBlock, blockData = turtle.inspect ()
+    if ( isBlock ) then
+        return blockData["state"]["age"] >= minCropAge
     else
-        local log = fs.open ( config["log-path"], "a" )
-        log.writeLine ( str )
-        log.close () 
-    end
-end
 
--- Gets the item index 
--- RETURNS: Slot index if the item is in the inventory, or nil
-function getItemIndex ( index )
-    for x = 1, 16, 1 do
-
-        -- Checks if the item matches the index
-        local item = turtle.getItemDetail ( x )
-        if ( item ~= nil and item["name"] == index ) then
-            return x
-        end
+        -- No plant, somethings wrong
+        libstdout.log ( "No plant in inspect!", logPath )
     end
 
-    -- The item is not in the inventory
     return nil
 end
 
--- Checks if the current plant has grown
--- RETURNS: A boolean representing whether or not the current plant is eligible to be harvested, nil if the block is not a plant
-function isPlantGrown ()
-    local _, blockData = turtle.inspect ()
-    return blockData["state"]["age"] >= config["min-crop-age"]
-end
-
--- Succ
-function suckItems ()
-    for x = 1, config["max-suck-iterations"], 1 do
-        turtle.suck ()
-    end
-end
-
--- Replants the current plantPLANT_MIN_AGE
--- RETURNS: A boolean representing whether or not the plant was replanted
-function replant ()
-
-    -- Checks if the block exists
-    if ( turtle.detect () ) then
-
-        -- Replaces the block
-        turtle.dig ()
-        suckItems ()
-        local plantIndex = getItemIndex ( config["crop"] )
-        if ( plantIndex ~= nil ) then
-            turtle.select ( plantIndex )
-            turtle.place ()
-            return true
-        else
-
-            -- No plant available
-            return false
-        end
-    else
-
-        -- No block in front
-        return false
-    end
-end
-
--- Checks if the turtle has reached the limit
--- RETURNS: Boolean representing whether or not it has reached the limit
-function updateLimit ()
-
-    -- Checks if there is an obstruction to the current path
-    if ( currentLimit == 1 ) then
-        turtle.turnLeft ()
-    else
-        turtle.turnRight ()
-    end
-
-    local reached = turtle.detect ()
-    if ( reached ) then
-        currentLimit = math.abs ( currentLimit - 1 )
-        return reached
-    end
-
-    return false
-end
-
--- Moves the turtle laterally alogn the row
-function moveLaterally ( lengthKnown )
-
-    if ( lengthKnown ~= true ) then 
-
-        -- Checks if the turtle has reached the limit
-        local reached = updateLimit ()
+function moveAlong ()
+    if ( rowLength == nil ) then
+    
+        -- Checks for obstacles
+        local reached = turtle.detect ()
         if ( reached ) then
-
-            if ( currentLimit == 0 ) then
-                turtle.turnRight ()
-            else
-                turtle.turnLeft ()
-            end
-
+            
+            -- Inverts the limit
+            limit = math.abs ( limit - 1 )
+        
+            -- Starts observing plant on the right
+            libturtle.setRotation ( 1, limit, facing )
             return false
         end
-    else
-        
-        -- Turns the turtle
-        if ( currentLimit == 1 ) then
-            turtle.turnLeft ()
-        else
-            turtle.turnRight ()
-        end
     end
 
-    -- Currently at the right limit (needs to move left)
-    if ( currentLimit == 1 ) then
-        turtle.forward ()
-        turtle.turnRight ()
-
-    -- Currently at the left limit (needs to move right)
-    else
-        turtle.forward ()
-        turtle.turnLeft ()
-    end
-
+    turtle.forward ()
     return true
 end
 
--- MAIN FUNCTION
+
+-- [[ MAIN LOOP ]]
+
+-- Sets the turtle to face crop on the right
+libturtle.setRotation ( 1, limit, facing )
+
 while true do
-    os.sleep ( 0 ) -- Avoids "too long without yielding" error, this could be avoided if there was a crop growth event, but no
 
-    -- Checks if the current plant has grown
+    -- Checks if the plant has grown
     if ( isPlantGrown () ) then
+        if ( rowLength ~= nil ) then
+            for _ = 1, rowLength - 1, 1 do
 
-        replant ()
+                -- Replants the crop
+                libturtle.replant ( doubleSided, crop, limit, facing, logPath )
 
-        if ( config["row-length"] ~= nil ) then
-
-            -- Moves the specified length in the config 
-            for _ = 1, config["row-length"] - 1, 1 do -- Needs to subtract 1 from the row length, because one space is already occupied by the turtle itself
-                moveLaterally ( true )
-                replant ()
+                -- Moves along the row
+                moveAlong ()
             end
-
-            -- Inverts the currentLimit
-            currentLimit = math.abs ( currentLimit - 1 )
         else
 
             -- Moves until it runs into an obstacle
-            while moveLaterally () do
-               replant ()
+            while moveAlong () do
+                libturtle.replant ( doubleSided, crop, limit, facing, logPath )
             end
         end
     end
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- -- Checks if the turtle has reached the limit
+-- -- RETURNS: Boolean representing whether or not it has reached the limit
+-- function updateLimit ()
+
+--     -- Checks if there is an obstruction to the current path
+--     setRotation ( 0 )
+--     local reached = turtle.detect ()
+--     if ( reached ) then
+--         currentLimit = math.abs ( currentLimit - 1 )
+--         return reached
+--     end
+
+--     return false
+-- end
+
+-- function replantColumn ( endRot )
+--     setRotation ( 1 )
+--     replant () -- Replants the right
+--     turnAround ()
+--     replant () -- Replants the left
+
+--     -- Sets the final rotation
+--     setRotation ( endRot )
+-- end
+
+-- function replant ()
+--     if ( config["harvestd"]["double-sided"] ) then
+--         replantColumn ( facing )
+--     else
+--         replantSingle ()
+--     end
+-- end
+
+-- -- Moves the turtle laterally alogn the row
+-- function moveLaterally ( lengthKnown )
+
+--     if ( lengthKnown ~= true ) then
+
+--         -- Checks if the turtle has reached the limit
+--         local reached = updateLimit ()
+--         if ( reached ) then
+
+--             -- Since the end of the row has been reached, starts observing the crop
+--             if ( currentLimit == 0 ) then
+--                 turtle.turnRight ()
+--             else
+--                 turtle.turnLeft ()
+--             end
+
+--             return false
+--         end
+--     else
+--         setRotation ( 0 )
+--     end
+
+--     -- Currently at the right limit (needs to move left)
+--     if ( currentLimit == 1 ) then
+--         turtle.forward ()
+--         turtle.turnRight ()
+
+--     -- Currently at the left limit (needs to move right)
+--     else
+--         turtle.forward ()
+--         turtle.turnLeft ()
+--     end
+
+--     return true
+-- end
+
+-- -- MAIN FUNCTION
+-- while true do
+--     os.sleep ( 0 ) -- Avoids "too long without yielding" error, this could be avoided if there was a crop growth event, but no
+
+--     -- Checks if the current plant has grown
+--     if ( isPlantGrown () ) then
+
+--         replant ()
+
+--         if ( config["harvestd"]["row-length"] ~= nil ) then
+
+--             -- Moves the specified length in the config
+--             for _ = 1, config["harvestd"]["row-length"] - 1, 1 do -- Needs to subtract 1 from the row length, because one space is already occupied by the turtle itself
+--                 moveLaterally ( true )
+--                 replant ()
+--             end
+
+--             -- Inverts the currentLimit
+--             currentLimit = math.abs ( currentLimit - 1 )
+--         else
+
+--             -- Moves until it runs into an obstacle
+--             while moveLaterally () do
+--                replant ()
+--             end
+--         end
+--     end
+-- end
