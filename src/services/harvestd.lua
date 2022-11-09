@@ -5,16 +5,18 @@ local config = libconfig.parseConfigFile ( "harvestd" )["harvestd"]
 
 -- local variables
 local currentLimit = 1 -- 1 Represents right, 0 left
-local facingPlant = true
 
 function log ( str, debug )
     debug = debug or true
-    local logFile = ""
-    if ( debug ) then logFile = config["debug-log-file"] else logFile = config["log-file"] end
-
-    local log = fs.open ( logFile, "a" )
-    log.writeLine ( str )
-    log.close ()
+    if ( debug ) then  
+        local log = fs.open ( config["debug-log-path"], "a" )
+        log.writeLine ( str )
+        log.close ()
+    else
+        local log = fs.open ( config["log-path"], "a" )
+        log.writeLine ( str )
+        log.close () 
+    end
 end
 
 -- Gets the item index 
@@ -36,7 +38,6 @@ end
 -- Checks if the current plant has grown
 -- RETURNS: A boolean representing whether or not the current plant is eligible to be harvested, nil if the block is not a plant
 function isPlantGrown ()
-    if ( facingPlant ~= true ) then return nil end
     local _, blockData = turtle.inspect ()
     return blockData["state"]["age"] >= config["min-crop-age"]
 end
@@ -82,10 +83,8 @@ function updateLimit ()
     -- Checks if there is an obstruction to the current path
     if ( currentLimit == 1 ) then
         turtle.turnLeft ()
-        facingPlant = false
     else
         turtle.turnRight ()
-        facingPlant = false
     end
 
     local reached = turtle.detect ()
@@ -98,21 +97,30 @@ function updateLimit ()
 end
 
 -- Moves the turtle laterally alogn the row
-function moveLaterally ()
+function moveLaterally ( lengthKnown )
 
-    -- Checks if the turtle has reached the limit
-    local reached = updateLimit ()
-    if ( reached ) then
+    if ( lengthKnown ~= true ) then 
 
-        if ( currentLimit == 0 ) then
-            turtle.turnRight ()
-            facingPlant = true
-        else
-            turtle.turnLeft ()
-            facingPlant = true
+        -- Checks if the turtle has reached the limit
+        local reached = updateLimit ()
+        if ( reached ) then
+
+            if ( currentLimit == 0 ) then
+                turtle.turnRight ()
+            else
+                turtle.turnLeft ()
+            end
+
+            return false
         end
-
-        return false
+    else
+        
+        -- Turns the turtle
+        if ( currentLimit == 1 ) then
+            turtle.turnLeft ()
+        else
+            turtle.turnRight ()
+        end
     end
 
     -- Currently at the right limit (needs to move left)
@@ -131,6 +139,7 @@ end
 
 -- MAIN FUNCTION
 while true do
+    os.sleep ( 0 ) -- Avoids "too long without yielding" error, this could be avoided if there was a crop growth event, but no
 
     -- Checks if the current plant has grown
     if ( isPlantGrown () ) then
@@ -141,7 +150,7 @@ while true do
 
             -- Moves the specified length in the config 
             for _ = 1, config["row-length"] - 1, 1 do -- Needs to subtract 1 from the row length, because one space is already occupied by the turtle itself
-                moveLaterally ()
+                moveLaterally ( true )
                 replant ()
             end
 

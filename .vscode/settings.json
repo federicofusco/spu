@@ -10,5 +10,8 @@
         "updateLimit",
         "moveLaterally",
         "log"
+    ],
+    "Lua.diagnostics.disable": [
+        "undefined-field"
     ]
 }
