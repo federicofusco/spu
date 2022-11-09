@@ -37,12 +37,12 @@ function moveAlong ()
         -- Checks for obstacles
         local reached = turtle.detect ()
         if ( reached ) then
-            
-            -- Inverts the limit
-            limit[1] = math.abs ( limit[1] - 1 )
         
             -- Starts observing plant on the right
             libturtle.setRotation ( 1, limit, facing )
+            
+            -- Inverts the limit
+            limit[1] = math.abs ( limit[1] - 1 )
             return false
         end
     end
@@ -60,7 +60,7 @@ libturtle.setRotation ( 1, limit, facing )
 while true do
 
     -- Checks if the plant has grown
-    if ( isPlantGrown () ) then
+    if ( isPlantGrown () == true ) then
         if ( rowLength ~= nil ) then
 
             for _ = 1, rowLength - 1, 1 do
@@ -74,6 +74,9 @@ while true do
 
             -- Starts observing the crop
             libturtle.setRotation ( 1, limit, facing )
+        
+            -- Inverts the limit
+            limit[1] = math.abs ( limit[1] - 1 )
         else
 
             -- Moves until it runs into an obstacle

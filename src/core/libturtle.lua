@@ -112,7 +112,12 @@ end
 
 -- Handler for replantSingle() and replantDouble()
 libturtle.replant = function ( doubleSided, crop, limit, facing, maxSuckIterations, log )
-    if ( doubleSided ) then libturtle.replantDouble ( crop, limit, facing, maxSuckIterations, log ) else libturtle.replantSingle ( crop, maxSuckIterations, log ) end
+    if ( doubleSided ) then 
+        libturtle.replantDouble ( crop, limit, facing, maxSuckIterations, log ) 
+    else 
+        libturtle.setRotation ( 1, limit, facing )
+        libturtle.replantSingle ( crop, maxSuckIterations, log ) 
+    end
     libturtle.setRotation ( 0, limit, facing )
 end
 
