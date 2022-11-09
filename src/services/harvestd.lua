@@ -8,7 +8,7 @@ local currentLimit = 1 -- 1 Represents right, 0 left
 local facingPlant = true
 
 function log ( str, debug )
-    debug = debug or false
+    debug = debug or true
     local logFile = ""
     if ( debug ) then logFile = config["debug-log-file"] else logFile = config["log-file"] end
 
@@ -140,10 +140,13 @@ while true do
         if ( config["row-length"] ~= nil ) then
 
             -- Moves the specified length in the config 
-            for _ = 1, config["row-length"], 1 do
+            for _ = 1, config["row-length"] - 1, 1 do -- Needs to subtract 1 from the row length, because one space is already occupied by the turtle itself
                 moveLaterally ()
                 replant ()
             end
+
+            -- Inverts the currentLimit
+            currentLimit = math.abs ( currentLimit - 1 )
         else
 
             -- Moves until it runs into an obstacle
