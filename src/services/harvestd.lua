@@ -16,8 +16,8 @@ local maxSuckIterations = harvestdConfig["max-suck-iterations"] or 5
 local debugLogPath = logConfig["debug-log-path"] or "/.scu/services/logs/harvestd.debug.log"
 local logPath = logConfig["log-path"] or "/.scu/services/logs/harvestd.log"
 
-local limit = stateConfig["limit"] or 1
-local facing = stateConfig["facing"] or 1
+local limit = { stateConfig["limit"] or 1 } -- Must be used as limit[1], so it can be passed as a reference
+local facing = { stateConfig["facing"] or 1 } -- Same here
 
 local libturtle = require ( "libturtle" )
 
@@ -26,10 +26,6 @@ function isPlantGrown ()
     local isBlock, blockData = turtle.inspect ()
     if ( isBlock ) then
         return blockData["state"]["age"] >= minCropAge
-    else
-
-        -- No plant, somethings wrong
-        libstdout.log ( "No plant in inspect!", logPath )
     end
 
     return nil
@@ -43,7 +39,7 @@ function moveAlong ()
         if ( reached ) then
             
             -- Inverts the limit
-            limit = math.abs ( limit - 1 )
+            limit[1] = math.abs ( limit[1] - 1 )
         
             -- Starts observing plant on the right
             libturtle.setRotation ( 1, limit, facing )
@@ -66,6 +62,7 @@ while true do
     -- Checks if the plant has grown
     if ( isPlantGrown () ) then
         if ( rowLength ~= nil ) then
+
             for _ = 1, rowLength - 1, 1 do
 
                 -- Replants the crop
@@ -74,9 +71,13 @@ while true do
                 -- Moves along the row
                 moveAlong ()
             end
+
+            -- Starts observing the crop
+            libturtle.setRotation ( 1, limit, facing )
         else
 
             -- Moves until it runs into an obstacle
+            libturtle.replant ( doubleSided, crop, limit, facing, maxSuckIterations, logPath )
             while moveAlong () do
                 libturtle.replant ( doubleSided, crop, limit, facing, maxSuckIterations, logPath )
             end

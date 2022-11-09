@@ -21,7 +21,7 @@ shell.run ( "wget", serviceURL .. "/harvestd.lua", directory .. "/services/harve
 
 -- [[ Sets up logs ]]
 fs.open ( directory .. "/services/logs/harvestd.debug.log", "w" ).close ()
-fs.open ( directory .. "/services/logs/harvestd.log", "w" ).close () 
+fs.open ( directory .. "/services/logs/harvestd.log", "w" ).close ()
 
 -- [[ Creates default config files ]]
 shell.run ( "wget", configURL .. "/harvestd.toml", directory .. "/config/harvestd.toml" )

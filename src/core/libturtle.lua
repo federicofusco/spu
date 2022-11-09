@@ -9,9 +9,15 @@ local libstdout = require ( "libstdout" )
 local libturtle = {}
 
 -- Makes a 180 degree rotation
-libturtle.turnAround = function ()
+-- If the rotation is 0, the limit will be inversed
+libturtle.turnAround = function ( facing, limit )
     turtle.turnRight ()
     turtle.turnRight ()
+    if ( facing[1] == 0 ) then 
+        limit[1] = math.abs ( limit[1] - 1)
+    else
+        facing[1] = facing[1] - 2 * facing[1]
+    end
 end
 
 -- Gets the index of a given item in the inventory, or nil if it isn't present
@@ -39,33 +45,33 @@ end
 
 -- Sets the turtle's rotation based on its path
 libturtle.setRotation = function ( rot, limit, facing )
-    if ( facing == rot ) then return end -- edge case where if rot is 0 it might mean to turnAround, but that doesn't seem to be an issue
+    if ( facing[1] == rot ) then return end -- edge case where if rot is 0 it might mean to turnAround, but that doesn't seem to be an issue
 
     if ( rot == 0 ) then
 
         -- Moving left
-        if ( limit == 1 ) then
-            if ( facing == 1 ) then turtle.turnLeft () elseif ( facing == -1 ) then turtle.turnRight () end
+        if ( limit[1] == 1 ) then
+            if ( facing[1] == 1 ) then turtle.turnLeft () elseif ( facing[1] == -1 ) then turtle.turnRight () end
         
         -- Moving right
         else
-            if ( facing == 1 ) then turtle.turnRight () elseif ( facing == -1 ) then turtle.turnLeft () end
+            if ( facing[1] == 1 ) then turtle.turnRight () elseif ( facing[1] == -1 ) then turtle.turnLeft () end
         end
     elseif ( rot == 1 ) then
-        if ( facing == 0 ) then
-            if ( limit == 1 ) then turtle.turnRight () else turtle.turnLeft () end
+        if ( facing[1] == 0 ) then
+            if ( limit[1] == 1 ) then turtle.turnRight () else turtle.turnLeft () end
         else
-            libturtle.turnAround ()
+            libturtle.turnAround ( facing, limit )
         end
     elseif ( rot == -1 ) then
-        if ( facing == 0 ) then
-            if ( limit == 1 ) then turtle.turnLeft () else turtle.turnRight () end
+        if ( facing[1] == 0 ) then
+            if ( limit[1] == 1 ) then turtle.turnLeft () else turtle.turnRight () end
         else
-            libturtle.turnAround ()
+            libturtle.turnAround ( facing, limit )
         end
     end
 
-    facing = rot
+    facing[1] = rot
 end
 
 -- Replants the front facing crop
@@ -100,7 +106,7 @@ end
 libturtle.replantDouble = function ( crop, limit, facing, maxSuckIterations, log )
     libturtle.setRotation ( 1, limit, facing )
     libturtle.replantSingle ( crop, maxSuckIterations, log )
-    libturtle.turnAround ()
+    libturtle.turnAround ( facing, limit )
     libturtle.replantSingle ( crop, maxSuckIterations, log )
 end
 
