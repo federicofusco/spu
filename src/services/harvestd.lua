@@ -107,7 +107,7 @@ function moveLaterally ()
         if ( currentLimit == 0 ) then
             turtle.turnRight ()
             facingPlant = true
-        else 
+        else
             turtle.turnLeft ()
             facingPlant = true
         end
@@ -136,8 +136,20 @@ while true do
     if ( isPlantGrown () ) then
 
         replant ()
-        while moveLaterally () do
-            replant ()
+
+        if ( config["row-length"] ~= nil ) then
+
+            -- Moves the specified length in the config 
+            for _ = 1, config["row-length"], 1 do
+                moveLaterally ()
+                replant ()
+            end
+        else
+
+            -- Moves until it runs into an obstacle
+            while moveLaterally () do
+               replant ()
+            end
         end
     end
 end

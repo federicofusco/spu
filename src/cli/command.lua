@@ -82,7 +82,7 @@ command.run = function ( cmd, option )
         return nil 
     end
 
-    shell.run ( _cmd["run"] .. _option[1] )
+    shell.run ( _cmd["run"] .. _option[2] )
 end
 
 return command
