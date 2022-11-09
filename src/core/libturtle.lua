@@ -131,4 +131,12 @@ libturtle.isPlantGrown = function ( minCropAge, crop )
     return nil
 end
 
+-- Clears a turtle's inventory
+libturtle.dropInventory = function ()
+    for x = 1, 16, 1 do
+        turtle.select ( x )
+        turtle.drop ( turtle.getItemCount () )
+    end
+end
+
 return libturtle

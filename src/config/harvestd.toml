@@ -1,17 +1,20 @@
 # Just the a default config file
 
 [harvestd]
-crop                = "minecraft:wheat" # REQUIRED
-seed                = "minecraft:wheat_seeds"
+crop                = "minecraft:wheat"         # REQUIRED
+seed                = "minecraft:wheat_seeds"   # REQUIRED
 row-length          = 9
 double-sided        = true
 min-crop-age        = 7
 max-suck-iterations = 5
+
+[output]
+drop                = 1                         # Drop when it reaches the limit on the right
 
 [log]
 debug-log-path      = "/.scu/services/logs/harvestd.debug.log"
 log-path            = "/.scu/services/logs/harvestd.log"
 
 [state]
-limit               = 1 # 1 -> right, 0 -> left
-facing              = 1 # 1 -> right, 0 -> center, -1 -> left; This is relative to the straight path the turtle will traverse
+limit               = 1                         # 1 -> right, 0 -> left
+facing              = 1                         # 1 -> right, 0 -> center, -1 -> left; This is relative to the straight path the turtle will traverse

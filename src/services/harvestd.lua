@@ -4,6 +4,7 @@ local libconfig = require ( "libconfig" )
 local libstdout = require ( "libstdout" )
 local config = libconfig.parseConfigFile ( "harvestd" )
 local harvestdConfig = config["harvestd"]
+local outputConfig = config["output"]
 local logConfig = config["log"]
 local stateConfig = config["state"]
 
@@ -13,6 +14,8 @@ local doubleSided = harvestdConfig["double-sided"] or false
 local rowLength = harvestdConfig["row-length"] or nil
 local minCropAge = harvestdConfig["min-crop-age"] or 7
 local maxSuckIterations = harvestdConfig["max-suck-iterations"] or 5
+
+local drop = outputConfig["drop"] or 1
 
 local debugLogPath = logConfig["debug-log-path"] or "/.scu/services/logs/harvestd.debug.log"
 local logPath = logConfig["log-path"] or "/.scu/services/logs/harvestd.log"
@@ -34,6 +37,9 @@ function moveAlong ()
             
             -- Inverts the limit
             limit[1] = math.abs ( limit[1] - 1 )
+
+            -- Drops the inventory if necessary
+            if ( limit[1] == drop ) then turtle.dropInventory () end
             return false
         end
     end
@@ -68,6 +74,9 @@ while true do
         
             -- Inverts the limit
             limit[1] = math.abs ( limit[1] - 1 )
+
+            -- Clears the inventory if necessary
+            if ( limit[1] == drop ) then turtle.dropInventory () end
         else
 
             -- Moves until it runs into an obstacle
