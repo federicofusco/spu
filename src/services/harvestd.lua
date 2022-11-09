@@ -39,7 +39,7 @@ function moveAlong ()
             limit[1] = math.abs ( limit[1] - 1 )
 
             -- Drops the inventory if necessary
-            if ( limit[1] == drop ) then turtle.dropInventory () end
+            if ( limit[1] == drop ) then libturtle.dropInventory () end
             return false
         end
     end
@@ -76,7 +76,7 @@ while true do
             limit[1] = math.abs ( limit[1] - 1 )
 
             -- Clears the inventory if necessary
-            if ( limit[1] == drop ) then turtle.dropInventory () end
+            if ( limit[1] == drop ) then libturtle.dropInventory () end
         else
 
             -- Moves until it runs into an obstacle
