@@ -69,14 +69,14 @@ libturtle.setRotation = function ( rot, limit, facing )
 end
 
 -- Replants the front facing crop
-libturtle.replantSingle = function ( crop, log )
+libturtle.replantSingle = function ( crop, maxSuckIterations, log )
 
     -- Checks if the block exists
     if ( turtle.detect () ) then
 
         -- Replaces the block
         turtle.dig ()
-        libturtle.suckItems ()
+        libturtle.suckItems ( maxSuckIterations )
         local plantIndex = libturtle.getItemIndex ( crop )
         if ( plantIndex ~= nil ) then
             turtle.select ( plantIndex )
@@ -97,33 +97,17 @@ libturtle.replantSingle = function ( crop, log )
 end
 
 -- Replants crop on both sides 
-libturtle.replantDouble = function ( crop, limit, facing, log )
+libturtle.replantDouble = function ( crop, limit, facing, maxSuckIterations, log )
     libturtle.setRotation ( 1, limit, facing )
-    libturtle.replantSingle ( crop, log )
+    libturtle.replantSingle ( crop, maxSuckIterations, log )
     libturtle.turnAround ()
-    libturtle.replantSingle ( crop, log )
+    libturtle.replantSingle ( crop, maxSuckIterations, log )
 end
 
 -- Handler for replantSingle() and replantDouble()
-libturtle.replant = function ( doubleSided, crop, limit, facing, log )
-    if ( doubleSided ) then libturtle.replantDouble ( crop, limit, facing, log ) else libturtle.replantSingle ( crop, log ) end
+libturtle.replant = function ( doubleSided, crop, limit, facing, maxSuckIterations, log )
+    if ( doubleSided ) then libturtle.replantDouble ( crop, limit, facing, maxSuckIterations, log ) else libturtle.replantSingle ( crop, maxSuckIterations, log ) end
     libturtle.setRotation ( 0, limit, facing )
 end
-
--- libturtle.moveAlong = function ( limit, facing, rowLength )
-    
---     -- This function is only called after replant, which sets the turtle's rotation to 0
---     if ( rowLength == nil ) then
-    
---         -- Checks for an obstacle
---         local reached = turtle.detect ()
---         if ( reached ) then
-        
---         end
---     else
---     end
-    
---     turtle.forward ()
--- end
 
 return libturtle

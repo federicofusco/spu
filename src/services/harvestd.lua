@@ -69,7 +69,7 @@ while true do
             for _ = 1, rowLength - 1, 1 do
 
                 -- Replants the crop
-                libturtle.replant ( doubleSided, crop, limit, facing, logPath )
+                libturtle.replant ( doubleSided, crop, limit, facing, maxSuckIterations, logPath )
 
                 -- Moves along the row
                 moveAlong ()
@@ -78,7 +78,7 @@ while true do
 
             -- Moves until it runs into an obstacle
             while moveAlong () do
-                libturtle.replant ( doubleSided, crop, limit, facing, logPath )
+                libturtle.replant ( doubleSided, crop, limit, facing, maxSuckIterations, logPath )
             end
         end
     end
